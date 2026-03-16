@@ -1,6 +1,6 @@
 --// ══════════════════════════════════════════════════════════
---//   Залупа РП by armedminion  v3
---//   Xeno Compatible | English UI
+--//   Zalupa RP by armedminion  v4
+--//   Xeno Compatible | First Person Aimbot | Noclip Fixed
 --// ══════════════════════════════════════════════════════════
 
 local Players          = game:GetService("Players")
@@ -22,7 +22,7 @@ local Settings = {
 
 local LoopID = { GodMode = 0, InfAmmo = 0, NoRecoil = 0 }
 
---// ══════════ GUI PARENT (Xeno safe) ══════════
+--// ══════════ GUI PARENT ══════════
 local guiParent
 pcall(function() guiParent = (gethui and gethui()) or game:GetService("CoreGui") end)
 if not guiParent then guiParent = game:GetService("CoreGui") end
@@ -30,27 +30,21 @@ if guiParent:FindFirstChild("ZalupaRP_Hub") then guiParent.ZalupaRP_Hub:Destroy(
 
 --// ══════════ SCREEN GUI ══════════
 local SG = Instance.new("ScreenGui")
-SG.Name = "ZalupaRP_Hub"
-SG.Parent = guiParent
-SG.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-SG.ResetOnSpawn = false
+SG.Name = "ZalupaRP_Hub"; SG.Parent = guiParent
+SG.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; SG.ResetOnSpawn = false
 
 local MF = Instance.new("Frame")
-MF.Name = "Main"
-MF.Parent = SG
+MF.Name = "Main"; MF.Parent = SG
 MF.BackgroundColor3 = Color3.fromRGB(12, 12, 22)
 MF.BorderSizePixel = 0
 MF.Position = UDim2.new(0.015, 0, 0.05, 0)
 MF.Size = UDim2.new(0, 260, 0, 560)
-MF.Active = true
-MF.ClipsDescendants = true
+MF.Active = true; MF.ClipsDescendants = true
 Instance.new("UICorner", MF).CornerRadius = UDim.new(0, 12)
 
 local ms = Instance.new("UIStroke")
-ms.Parent = MF
-ms.Color = Color3.fromRGB(255, 50, 50)
-ms.Thickness = 1.5
-ms.Transparency = 0.3
+ms.Parent = MF; ms.Color = Color3.fromRGB(255, 50, 50)
+ms.Thickness = 1.5; ms.Transparency = 0.3
 
 --// ══════════ DRAG ══════════
 do
@@ -78,7 +72,7 @@ sh.ImageColor3 = Color3.new(0,0,0); sh.ImageTransparency = 0.5
 sh.ScaleType = Enum.ScaleType.Slice; sh.SliceCenter = Rect.new(23,23,277,277)
 sh.ZIndex = -1
 
---// ══════════ TITLE BAR ══════════
+--// ══════════ TITLE ══════════
 local TB = Instance.new("Frame")
 TB.Parent = MF; TB.BackgroundColor3 = Color3.fromRGB(25,25,42)
 TB.Size = UDim2.new(1,0,0,52); TB.BorderSizePixel = 0
@@ -94,7 +88,7 @@ local T2 = Instance.new("TextLabel")
 T2.Parent = TB; T2.BackgroundTransparency = 1
 T2.Position = UDim2.new(0,0,0,28); T2.Size = UDim2.new(1,0,0,18)
 T2.Font = Enum.Font.GothamSemibold; T2.TextSize = 11
-T2.Text = "by armedminion  •  [H] toggle menu"; T2.TextColor3 = Color3.fromRGB(180,180,200)
+T2.Text = "by armedminion v4  •  [H] menu"; T2.TextColor3 = Color3.fromRGB(180,180,200)
 
 local CR = Instance.new("TextLabel")
 CR.Parent = MF; CR.BackgroundTransparency = 1
@@ -103,7 +97,7 @@ CR.Font = Enum.Font.Gotham; CR.TextSize = 10
 CR.Text = "Zalupa RP by armedminion • Xeno"; CR.TextColor3 = Color3.fromRGB(90,90,110)
 CR.ZIndex = 5
 
---// ══════════ SCROLL FRAME ══════════
+--// ══════════ SCROLL ══════════
 local SF = Instance.new("ScrollingFrame")
 SF.Parent = MF; SF.Position = UDim2.new(0,0,0,54)
 SF.Size = UDim2.new(1,0,1,-76); SF.BackgroundTransparency = 1
@@ -114,10 +108,8 @@ SF.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
 local LL = Instance.new("UIListLayout")
 LL.Parent = SF; LL.SortOrder = Enum.SortOrder.LayoutOrder; LL.Padding = UDim.new(0,4)
-
 local UP = Instance.new("UIPadding")
-UP.Parent = SF; UP.PaddingLeft = UDim.new(0,8)
-UP.PaddingRight = UDim.new(0,8); UP.PaddingTop = UDim.new(0,4)
+UP.Parent = SF; UP.PaddingLeft = UDim.new(0,8); UP.PaddingRight = UDim.new(0,8); UP.PaddingTop = UDim.new(0,4)
 
 local lo = 0
 
@@ -128,12 +120,10 @@ local function AddToggle(label, callback)
     btn.Parent = SF; btn.BackgroundColor3 = Color3.fromRGB(32,32,50)
     btn.Size = UDim2.new(1,0,0,32); btn.Font = Enum.Font.GothamSemibold
     btn.Text = "  "..label..":  OFF"; btn.TextColor3 = Color3.fromRGB(200,200,215)
-    btn.TextSize = 13; btn.BorderSizePixel = 0; btn.AutoButtonColor = true
-    btn.LayoutOrder = lo
+    btn.TextSize = 13; btn.BorderSizePixel = 0; btn.AutoButtonColor = true; btn.LayoutOrder = lo
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,7)
     local st = Instance.new("UIStroke")
-    st.Parent = btn; st.Color = Color3.fromRGB(255,50,80)
-    st.Thickness = 1.2; st.Transparency = 1
+    st.Parent = btn; st.Color = Color3.fromRGB(255,50,80); st.Thickness = 1.2; st.Transparency = 1
     btn.MouseEnter:Connect(function() st.Transparency = 0 end)
     btn.MouseLeave:Connect(function() st.Transparency = 1 end)
     local on = false
@@ -153,21 +143,17 @@ local function AddAction(label, callback)
     btn.Parent = SF; btn.BackgroundColor3 = Color3.fromRGB(50,30,80)
     btn.Size = UDim2.new(1,0,0,32); btn.Font = Enum.Font.GothamBold
     btn.Text = "  ⚡ "..label; btn.TextColor3 = Color3.fromRGB(220,180,255)
-    btn.TextSize = 13; btn.BorderSizePixel = 0; btn.AutoButtonColor = true
-    btn.LayoutOrder = lo
+    btn.TextSize = 13; btn.BorderSizePixel = 0; btn.AutoButtonColor = true; btn.LayoutOrder = lo
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,7)
     local st = Instance.new("UIStroke")
-    st.Parent = btn; st.Color = Color3.fromRGB(180,80,255)
-    st.Thickness = 1.2; st.Transparency = 1
+    st.Parent = btn; st.Color = Color3.fromRGB(180,80,255); st.Thickness = 1.2; st.Transparency = 1
     btn.MouseEnter:Connect(function() st.Transparency = 0 end)
     btn.MouseLeave:Connect(function() st.Transparency = 1 end)
     btn.MouseButton1Click:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(80,200,80)
-        btn.Text = "  ✅ "..label.." — DONE"
+        btn.BackgroundColor3 = Color3.fromRGB(80,200,80); btn.Text = "  ✅ "..label.." — DONE"
         callback()
         task.delay(2, function()
-            btn.BackgroundColor3 = Color3.fromRGB(50,30,80)
-            btn.Text = "  ⚡ "..label
+            btn.BackgroundColor3 = Color3.fromRGB(50,30,80); btn.Text = "  ⚡ "..label
         end)
     end)
     return btn
@@ -176,10 +162,9 @@ end
 local function AddSep(text)
     lo = lo + 1
     local l = Instance.new("TextLabel")
-    l.Parent = SF; l.BackgroundTransparency = 1
-    l.Size = UDim2.new(1,0,0,20); l.Font = Enum.Font.GothamBold
-    l.Text = "── "..text.." ──"; l.TextColor3 = Color3.fromRGB(255,80,100)
-    l.TextSize = 11; l.LayoutOrder = lo
+    l.Parent = SF; l.BackgroundTransparency = 1; l.Size = UDim2.new(1,0,0,20)
+    l.Font = Enum.Font.GothamBold; l.Text = "── "..text.." ──"
+    l.TextColor3 = Color3.fromRGB(255,80,100); l.TextSize = 11; l.LayoutOrder = lo
 end
 
 --// ══════════ UTILITY ══════════
@@ -187,9 +172,7 @@ local function nukeAllESP()
     for _, p in ipairs(Players:GetPlayers()) do
         if p.Character then
             for _, o in ipairs(p.Character:GetDescendants()) do
-                if o.Name == "_ESP" or o.Name == "_ESPName" then
-                    pcall(function() o:Destroy() end)
-                end
+                if o.Name == "_ESP" or o.Name == "_ESPName" then pcall(function() o:Destroy() end) end
             end
         end
     end
@@ -227,15 +210,13 @@ local function applyESP(plr)
         local lbl = Instance.new("TextLabel")
         lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
         lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 14
-        lbl.TextColor3 = Color3.fromRGB(255,255,0); lbl.TextStrokeTransparency = 0
-        lbl.Parent = bb
+        lbl.TextColor3 = Color3.fromRGB(255,255,0); lbl.TextStrokeTransparency = 0; lbl.Parent = bb
 
         local hum = char:FindFirstChildOfClass("Humanoid")
         if hum then
             local cn; cn = RunService.Heartbeat:Connect(function()
                 if not Settings.ESP then
-                    pcall(function() hl:Destroy() end)
-                    pcall(function() bb:Destroy() end)
+                    pcall(function() hl:Destroy() end); pcall(function() bb:Destroy() end)
                     cn:Disconnect(); return
                 end
                 if not char or not char.Parent then cn:Disconnect(); return end
@@ -263,8 +244,7 @@ AddToggle("ESP", function(s)
         for _, p in ipairs(Players:GetPlayers()) do applyESP(p) end
         table.insert(espConns, Players.PlayerAdded:Connect(function(p) if Settings.ESP then applyESP(p) end end))
     else
-        disconnectESP()
-        task.defer(nukeAllESP)
+        disconnectESP(); task.defer(nukeAllESP)
     end
 end)
 
@@ -311,7 +291,7 @@ AddToggle("Tracers", function(s)
 end)
 
 --// ═══════════════════════════════════════════════
---//  3. AIMBOT
+--//  3. AIMBOT — FIRST PERSON + THIRD PERSON
 --// ═══════════════════════════════════════════════
 AddSep("COMBAT")
 
@@ -326,19 +306,41 @@ end)
 local aimActive = false
 local aimConn
 
+-- Определяем доступные методы движения мыши (Xeno)
+local hasMouseMoveRel = (mousemoverel ~= nil) or (Input and Input.MouseMove ~= nil)
+
+local function moveMouseToTarget(screenX, screenY)
+    local centerX = Camera.ViewportSize.X / 2
+    local centerY = Camera.ViewportSize.Y / 2
+    local deltaX = (screenX - centerX)
+    local deltaY = (screenY - centerY)
+
+    -- Smoothing
+    local smooth = math.clamp(1 / Settings.AimbotSmooth, 0.05, 1)
+    deltaX = deltaX * smooth
+    deltaY = deltaY * smooth
+
+    -- Пробуем разные методы (зависит от эксплоита)
+    if mousemoverel then
+        mousemoverel(deltaX, deltaY)
+    elseif Input and Input.MouseMove then
+        Input.MouseMove(deltaX, deltaY)
+    end
+end
+
 local function isVis(origin, part)
     if not Settings.AimbotWallCheck then return true end
     local p = RaycastParams.new()
     p.FilterType = Enum.RaycastFilterType.Blacklist
     p.FilterDescendantsInstances = {LocalPlayer.Character, Camera}
-    local r = workspace:Raycast(origin, (part.Position-origin).Unit*1000, p)
+    local r = workspace:Raycast(origin, (part.Position - origin).Unit * 1000, p)
     if r then return r.Instance:IsDescendantOf(part.Parent) end
     return true
 end
 
 local function getTarget()
     local best, bestD = nil, Settings.AimbotFOV
-    local ctr = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    local ctr = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
             local hum = p.Character:FindFirstChildOfClass("Humanoid")
@@ -349,7 +351,7 @@ local function getTarget()
                 if Settings.AimbotTeamCheck and p.Team and p.Team == LocalPlayer.Team then continue end
                 local pos, vis = Camera:WorldToViewportPoint(part.Position)
                 if vis then
-                    local d = (Vector2.new(pos.X,pos.Y)-ctr).Magnitude
+                    local d = (Vector2.new(pos.X, pos.Y) - ctr).Magnitude
                     if d < bestD and isVis(Camera.CFrame.Position, part) then
                         bestD = d; best = part
                     end
@@ -360,6 +362,15 @@ local function getTarget()
     return best
 end
 
+-- Определяем от первого или третьего лица
+local function isFirstPerson()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    local head = char:FindFirstChild("Head")
+    if not head then return false end
+    return (Camera.CFrame.Position - head.Position).Magnitude < 1.5
+end
+
 AddToggle("Aimbot (RMB / Q)", function(s)
     Settings.Aimbot = s
     if s then
@@ -368,20 +379,50 @@ AddToggle("Aimbot (RMB / Q)", function(s)
         aimConn = RunService.RenderStepped:Connect(function()
             if not Settings.Aimbot then
                 if fovCircle then fovCircle.Visible = false end
-                aimConn:Disconnect(); aimConn = nil; return
+                if aimConn then aimConn:Disconnect(); aimConn = nil end
+                return
             end
-            local ctr = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+
+            local ctr = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
             if fovCircle then
-                fovCircle.Position = ctr; fovCircle.Radius = Settings.AimbotFOV
+                fovCircle.Position = ctr
+                fovCircle.Radius = Settings.AimbotFOV
                 fovCircle.Visible = Settings.AimbotShowFOV
             end
+
             if not aimActive then return end
-            local t = getTarget()
-            if t then
+
+            local target = getTarget()
+            if not target then return end
+
+            local fp = isFirstPerson()
+
+            if fp and (mousemoverel or (Input and Input.MouseMove)) then
+                --// ═══ FIRST PERSON MODE ═══
+                -- Используем mousemoverel — двигаем мышь к цели
+                local screenPos, onScreen = Camera:WorldToViewportPoint(target.Position)
+                if onScreen then
+                    moveMouseToTarget(screenPos.X, screenPos.Y)
+                end
+            else
+                --// ═══ THIRD PERSON / FALLBACK ═══
+                -- CFrame метод + вращаем персонажа
                 local cf = Camera.CFrame
-                local dir = (t.Position - cf.Position).Unit
+                local dir = (target.Position - cf.Position).Unit
                 local goal = CFrame.lookAt(cf.Position, cf.Position + dir)
-                Camera.CFrame = cf:Lerp(goal, math.clamp(1/Settings.AimbotSmooth, 0.05, 1))
+                local alpha = math.clamp(1 / Settings.AimbotSmooth, 0.05, 1)
+                Camera.CFrame = cf:Lerp(goal, alpha)
+
+                -- Вращаем HumanoidRootPart чтобы пули летели в цель
+                pcall(function()
+                    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        local flatDir = Vector3.new(dir.X, 0, dir.Z)
+                        if flatDir.Magnitude > 0 then
+                            hrp.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatDir.Unit)
+                        end
+                    end
+                end)
             end
         end)
     else
@@ -515,16 +556,30 @@ LocalPlayer.CharacterAdded:Connect(function(ch)
 end)
 
 --// ═══════════════════════════════════════════════
---//  8. NOCLIP
+--//  8. NOCLIP — ПОЛНЫЙ ФИХ
 --// ═══════════════════════════════════════════════
 local ncConn
+local noclipSaved = {} -- сохраняем оригинальные значения CanCollide
 
 AddToggle("Noclip", function(s)
     Settings.Noclip = s
     if s then
+        -- Сохраняем оригинальные CanCollide
+        noclipSaved = {}
+        pcall(function()
+            for _, p in ipairs(LocalPlayer.Character:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    noclipSaved[p] = p.CanCollide
+                end
+            end
+        end)
+
         if ncConn then ncConn:Disconnect() end
         ncConn = RunService.Stepped:Connect(function()
-            if not Settings.Noclip then ncConn:Disconnect(); ncConn = nil; return end
+            if not Settings.Noclip then
+                ncConn:Disconnect(); ncConn = nil
+                return
+            end
             pcall(function()
                 for _, p in ipairs(LocalPlayer.Character:GetDescendants()) do
                     if p:IsA("BasePart") then p.CanCollide = false end
@@ -532,7 +587,36 @@ AddToggle("Noclip", function(s)
             end)
         end)
     else
+        -- Отключаем соединение
         if ncConn then ncConn:Disconnect(); ncConn = nil end
+
+        -- Восстанавливаем оригинальные значения
+        task.defer(function()
+            for part, original in pairs(noclipSaved) do
+                pcall(function()
+                    if part and part.Parent then
+                        part.CanCollide = original
+                    end
+                end)
+            end
+            noclipSaved = {}
+        end)
+
+        -- Дополнительно: принудительно включаем коллизию основных частей тела
+        task.defer(function()
+            pcall(function()
+                local ch = LocalPlayer.Character
+                if ch then
+                    local mainParts = {"HumanoidRootPart", "Head", "Torso", "UpperTorso", "LowerTorso"}
+                    for _, name in ipairs(mainParts) do
+                        local p = ch:FindFirstChild(name)
+                        if p and p:IsA("BasePart") then
+                            p.CanCollide = true
+                        end
+                    end
+                end
+            end)
+        end)
     end
 end)
 
@@ -591,51 +675,34 @@ LocalPlayer.CharacterAdded:Connect(function() if Settings.Fly then stopFly() end
 AddSep("PERFORMANCE")
 
 AddAction("FPS BOOST (Massive)", function()
-    -- Render quality minimum
     pcall(function()
         settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
         UserSettings():GetService("UserGameSettings").SavedQualityLevel = Enum.SavedQualitySetting.QualityLevel1
     end)
-
-    -- Disable shadows & fog
     pcall(function()
-        Lighting.GlobalShadows = false
-        Lighting.FogEnd = 9e9
-        Lighting.Brightness = 1
+        Lighting.GlobalShadows = false; Lighting.FogEnd = 9e9; Lighting.Brightness = 1
     end)
-
-    -- Kill all post-processing
     local pfx = {"BloomEffect","BlurEffect","ColorCorrectionEffect","SunRaysEffect","DepthOfFieldEffect","Atmosphere"}
     for _, n in ipairs(pfx) do
         for _, o in ipairs(Lighting:GetChildren()) do if o:IsA(n) then pcall(function() o:Destroy() end) end end
         for _, o in ipairs(Camera:GetChildren()) do if o:IsA(n) then pcall(function() o:Destroy() end) end end
     end
-
-    -- Kill particles, fire, smoke, trails, beams, lights
     local kc = {"ParticleEmitter","Fire","Smoke","Sparkles","Trail","Beam","PointLight","SpotLight","SurfaceLight"}
     for _, o in ipairs(workspace:GetDescendants()) do
         for _, c in ipairs(kc) do if o:IsA(c) then pcall(function() o:Destroy() end); break end end
     end
-
-    -- Hide decals & textures
     for _, o in ipairs(workspace:GetDescendants()) do
         if o:IsA("Decal") or o:IsA("Texture") then pcall(function() o.Transparency = 1 end) end
     end
-
-    -- Terrain optimizations
     pcall(function()
         local t = workspace.Terrain
-        t.WaterWaveSize = 0; t.WaterWaveSpeed = 0
-        t.WaterReflectance = 0; t.WaterTransparency = 0; t.Decoration = false
+        t.WaterWaveSize = 0; t.WaterWaveSpeed = 0; t.WaterReflectance = 0
+        t.WaterTransparency = 0; t.Decoration = false
     end)
-
-    -- MeshPart LOD + disable shadows on all parts
     for _, o in ipairs(workspace:GetDescendants()) do
         if o:IsA("MeshPart") then pcall(function() o.RenderFidelity = Enum.RenderFidelity.Performance end) end
         if o:IsA("BasePart") then pcall(function() o.CastShadow = false end) end
     end
-
-    -- Reduce humanoid overhead for others
     for _, o in ipairs(workspace:GetDescendants()) do
         if o:IsA("Humanoid") and not o:IsDescendantOf(LocalPlayer.Character or game) then
             pcall(function()
@@ -644,18 +711,13 @@ AddAction("FPS BOOST (Massive)", function()
             end)
         end
     end
-
-    -- Lighting technology downgrade
     pcall(function() if sethiddenproperty then sethiddenproperty(Lighting, "Technology", Enum.Technology.Compatibility) end end)
-
-    -- Garbage collect
     pcall(function() collectgarbage("collect") end)
-
     print("[Zalupa RP] FPS BOOST applied!")
 end)
 
 --// ═══════════════════════════════════════════════
---//  HOTKEY — H
+--//  HOTKEY H
 --// ═══════════════════════════════════════════════
 UserInputService.InputBegan:Connect(function(i, g)
     if g then return end
@@ -663,13 +725,13 @@ UserInputService.InputBegan:Connect(function(i, g)
 end)
 
 --// ═══════════════════════════════════════════════
---//  LOADED NOTIFICATION
+--//  LOADED
 --// ═══════════════════════════════════════════════
 pcall(function()
     StarterGui:SetCore("SendNotification", {
-        Title    = "🍆 Zalupa RP",
-        Text     = "by armedminion v3 loaded!\nH=menu | RMB/Q=aim | WASD=fly",
+        Title = "🍆 Zalupa RP v4",
+        Text  = "by armedminion loaded!\nH=menu | RMB/Q=aim | WASD=fly",
         Duration = 7,
     })
 end)
-print("[Zalupa RP by armedminion] v3 loaded — H=menu | RMB/Q=aim")
+print("[Zalupa RP by armedminion] v4 loaded")
