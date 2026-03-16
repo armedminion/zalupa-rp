@@ -1,6 +1,6 @@
 --// ══════════════════════════════════════════════════════════
---//   Zalupa RP by armedminion  v4
---//   Xeno Compatible | First Person Aimbot | Noclip Fixed
+--//   Zalupa RP by armedminion  v5
+--//   AIMBOT FIXED — works in First & Third Person
 --// ══════════════════════════════════════════════════════════
 
 local Players          = game:GetService("Players")
@@ -16,7 +16,7 @@ local Settings = {
     SpeedValue = 100, GodMode = false, InfAmmo = false, NoRecoil = false,
     Fly = false, FlySpeed = 80,
     Aimbot = false, AimbotKey = Enum.UserInputType.MouseButton2,
-    AimbotFOV = 180, AimbotSmooth = 5, AimbotPart = "Head",
+    AimbotFOV = 250, AimbotSmooth = 3, AimbotPart = "Head",
     AimbotShowFOV = true, AimbotWallCheck = false, AimbotTeamCheck = false,
 }
 
@@ -27,6 +27,9 @@ local guiParent
 pcall(function() guiParent = (gethui and gethui()) or game:GetService("CoreGui") end)
 if not guiParent then guiParent = game:GetService("CoreGui") end
 if guiParent:FindFirstChild("ZalupaRP_Hub") then guiParent.ZalupaRP_Hub:Destroy() end
+
+-- Unbind old aimbot if re-executing
+pcall(function() RunService:UnbindFromRenderStep("ZalupaAimbot") end)
 
 --// ══════════ SCREEN GUI ══════════
 local SG = Instance.new("ScreenGui")
@@ -69,8 +72,7 @@ sh.Parent = MF; sh.AnchorPoint = Vector2.new(0.5,0.5)
 sh.Position = UDim2.new(0.5,0,0.5,0); sh.Size = UDim2.new(1,35,1,35)
 sh.BackgroundTransparency = 1; sh.Image = "rbxassetid://5554236805"
 sh.ImageColor3 = Color3.new(0,0,0); sh.ImageTransparency = 0.5
-sh.ScaleType = Enum.ScaleType.Slice; sh.SliceCenter = Rect.new(23,23,277,277)
-sh.ZIndex = -1
+sh.ScaleType = Enum.ScaleType.Slice; sh.SliceCenter = Rect.new(23,23,277,277); sh.ZIndex = -1
 
 --// ══════════ TITLE ══════════
 local TB = Instance.new("Frame")
@@ -88,14 +90,13 @@ local T2 = Instance.new("TextLabel")
 T2.Parent = TB; T2.BackgroundTransparency = 1
 T2.Position = UDim2.new(0,0,0,28); T2.Size = UDim2.new(1,0,0,18)
 T2.Font = Enum.Font.GothamSemibold; T2.TextSize = 11
-T2.Text = "by armedminion v4  •  [H] menu"; T2.TextColor3 = Color3.fromRGB(180,180,200)
+T2.Text = "by armedminion v5  •  [H] menu"; T2.TextColor3 = Color3.fromRGB(180,180,200)
 
 local CR = Instance.new("TextLabel")
 CR.Parent = MF; CR.BackgroundTransparency = 1
 CR.Position = UDim2.new(0,0,1,-20); CR.Size = UDim2.new(1,0,0,18)
 CR.Font = Enum.Font.Gotham; CR.TextSize = 10
-CR.Text = "Zalupa RP by armedminion • Xeno"; CR.TextColor3 = Color3.fromRGB(90,90,110)
-CR.ZIndex = 5
+CR.Text = "Zalupa RP by armedminion • Xeno"; CR.TextColor3 = Color3.fromRGB(90,90,110); CR.ZIndex = 5
 
 --// ══════════ SCROLL ══════════
 local SF = Instance.new("ScrollingFrame")
@@ -103,13 +104,12 @@ SF.Parent = MF; SF.Position = UDim2.new(0,0,0,54)
 SF.Size = UDim2.new(1,0,1,-76); SF.BackgroundTransparency = 1
 SF.BorderSizePixel = 0; SF.ScrollBarThickness = 4
 SF.ScrollBarImageColor3 = Color3.fromRGB(255,50,80)
-SF.CanvasSize = UDim2.new(0,0,0,0)
-SF.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SF.CanvasSize = UDim2.new(0,0,0,0); SF.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
 local LL = Instance.new("UIListLayout")
 LL.Parent = SF; LL.SortOrder = Enum.SortOrder.LayoutOrder; LL.Padding = UDim.new(0,4)
-local UP = Instance.new("UIPadding")
-UP.Parent = SF; UP.PaddingLeft = UDim.new(0,8); UP.PaddingRight = UDim.new(0,8); UP.PaddingTop = UDim.new(0,4)
+local UPad = Instance.new("UIPadding")
+UPad.Parent = SF; UPad.PaddingLeft = UDim.new(0,8); UPad.PaddingRight = UDim.new(0,8); UPad.PaddingTop = UDim.new(0,4)
 
 local lo = 0
 
@@ -200,18 +200,15 @@ local function applyESP(plr)
         hl.Name = "_ESP"; hl.FillColor = Color3.fromRGB(255,0,0)
         hl.FillTransparency = 0.55; hl.OutlineColor = Color3.fromRGB(255,255,255)
         hl.Adornee = char; hl.Parent = char
-
         local attach = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
         if not attach then return end
         local bb = Instance.new("BillboardGui")
         bb.Name = "_ESPName"; bb.Size = UDim2.new(0,220,0,44)
         bb.StudsOffset = Vector3.new(0,3.2,0); bb.AlwaysOnTop = true; bb.Parent = attach
-
         local lbl = Instance.new("TextLabel")
         lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
         lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 14
         lbl.TextColor3 = Color3.fromRGB(255,255,0); lbl.TextStrokeTransparency = 0; lbl.Parent = bb
-
         local hum = char:FindFirstChildOfClass("Humanoid")
         if hum then
             local cn; cn = RunService.Heartbeat:Connect(function()
@@ -243,9 +240,7 @@ AddToggle("ESP", function(s)
     if s then
         for _, p in ipairs(Players:GetPlayers()) do applyESP(p) end
         table.insert(espConns, Players.PlayerAdded:Connect(function(p) if Settings.ESP then applyESP(p) end end))
-    else
-        disconnectESP(); task.defer(nukeAllESP)
-    end
+    else disconnectESP(); task.defer(nukeAllESP) end
 end)
 
 --// ═══════════════════════════════════════════════
@@ -291,7 +286,7 @@ AddToggle("Tracers", function(s)
 end)
 
 --// ═══════════════════════════════════════════════
---//  3. AIMBOT — FIRST PERSON + THIRD PERSON
+--//  3. AIMBOT — FULLY FIXED (BindToRenderStep)
 --// ═══════════════════════════════════════════════
 AddSep("COMBAT")
 
@@ -304,29 +299,6 @@ pcall(function()
 end)
 
 local aimActive = false
-local aimConn
-
--- Определяем доступные методы движения мыши (Xeno)
-local hasMouseMoveRel = (mousemoverel ~= nil) or (Input and Input.MouseMove ~= nil)
-
-local function moveMouseToTarget(screenX, screenY)
-    local centerX = Camera.ViewportSize.X / 2
-    local centerY = Camera.ViewportSize.Y / 2
-    local deltaX = (screenX - centerX)
-    local deltaY = (screenY - centerY)
-
-    -- Smoothing
-    local smooth = math.clamp(1 / Settings.AimbotSmooth, 0.05, 1)
-    deltaX = deltaX * smooth
-    deltaY = deltaY * smooth
-
-    -- Пробуем разные методы (зависит от эксплоита)
-    if mousemoverel then
-        mousemoverel(deltaX, deltaY)
-    elseif Input and Input.MouseMove then
-        Input.MouseMove(deltaX, deltaY)
-    end
-end
 
 local function isVis(origin, part)
     if not Settings.AimbotWallCheck then return true end
@@ -362,81 +334,90 @@ local function getTarget()
     return best
 end
 
--- Определяем от первого или третьего лица
-local function isFirstPerson()
-    local char = LocalPlayer.Character
-    if not char then return false end
-    local head = char:FindFirstChild("Head")
-    if not head then return false end
-    return (Camera.CFrame.Position - head.Position).Magnitude < 1.5
+--// ═══ ГЛАВНЫЙ ФИКС: BindToRenderStep с приоритетом ВЫШЕ камеры ═══
+--// Camera priority = 200. Мы ставим 201 = наш код выполняется ПОСЛЕ камеры
+--// Поэтому камера игры не может перезаписать наш CFrame
+
+local AIMBOT_PRIORITY = Enum.RenderPriority.Camera.Value + 1  -- 201
+
+local function startAimbotLoop()
+    pcall(function() RunService:UnbindFromRenderStep("ZalupaAimbot") end)
+
+    RunService:BindToRenderStep("ZalupaAimbot", AIMBOT_PRIORITY, function()
+        Camera = workspace.CurrentCamera -- обновляем ссылку на камеру
+
+        -- FOV Circle
+        if fovCircle then
+            if Settings.Aimbot and Settings.AimbotShowFOV then
+                local ctr = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                fovCircle.Position = ctr
+                fovCircle.Radius = Settings.AimbotFOV
+                fovCircle.Visible = true
+            else
+                fovCircle.Visible = false
+            end
+        end
+
+        -- Если аимбот выключен или кнопка не нажата — выходим
+        if not Settings.Aimbot then return end
+        if not aimActive then return end
+
+        -- Ищем цель
+        local target = getTarget()
+        if not target then return end
+
+        -- Получаем текущую позицию камеры и направление к цели
+        local camPos = Camera.CFrame.Position
+        local targetPos = target.Position
+        local direction = (targetPos - camPos).Unit
+
+        -- Создаём целевой CFrame
+        local goalCF = CFrame.lookAt(camPos, camPos + direction)
+
+        -- Плавность
+        local alpha = math.clamp(1 / Settings.AimbotSmooth, 0.05, 1)
+
+        -- Устанавливаем камеру (ПОСЛЕ того как игра обновила камеру)
+        Camera.CFrame = Camera.CFrame:Lerp(goalCF, alpha)
+
+        -- Также вращаем персонажа чтобы пули летели в цель
+        pcall(function()
+            local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local flatDir = Vector3.new(direction.X, 0, direction.Z)
+                if flatDir.Magnitude > 0 then
+                    hrp.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatDir.Unit)
+                end
+            end
+        end)
+    end)
+end
+
+local function stopAimbotLoop()
+    pcall(function() RunService:UnbindFromRenderStep("ZalupaAimbot") end)
+    if fovCircle then fovCircle.Visible = false end
 end
 
 AddToggle("Aimbot (RMB / Q)", function(s)
     Settings.Aimbot = s
     if s then
-        if fovCircle then fovCircle.Visible = Settings.AimbotShowFOV end
-        if aimConn then aimConn:Disconnect() end
-        aimConn = RunService.RenderStepped:Connect(function()
-            if not Settings.Aimbot then
-                if fovCircle then fovCircle.Visible = false end
-                if aimConn then aimConn:Disconnect(); aimConn = nil end
-                return
-            end
-
-            local ctr = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-            if fovCircle then
-                fovCircle.Position = ctr
-                fovCircle.Radius = Settings.AimbotFOV
-                fovCircle.Visible = Settings.AimbotShowFOV
-            end
-
-            if not aimActive then return end
-
-            local target = getTarget()
-            if not target then return end
-
-            local fp = isFirstPerson()
-
-            if fp and (mousemoverel or (Input and Input.MouseMove)) then
-                --// ═══ FIRST PERSON MODE ═══
-                -- Используем mousemoverel — двигаем мышь к цели
-                local screenPos, onScreen = Camera:WorldToViewportPoint(target.Position)
-                if onScreen then
-                    moveMouseToTarget(screenPos.X, screenPos.Y)
-                end
-            else
-                --// ═══ THIRD PERSON / FALLBACK ═══
-                -- CFrame метод + вращаем персонажа
-                local cf = Camera.CFrame
-                local dir = (target.Position - cf.Position).Unit
-                local goal = CFrame.lookAt(cf.Position, cf.Position + dir)
-                local alpha = math.clamp(1 / Settings.AimbotSmooth, 0.05, 1)
-                Camera.CFrame = cf:Lerp(goal, alpha)
-
-                -- Вращаем HumanoidRootPart чтобы пули летели в цель
-                pcall(function()
-                    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    if hrp then
-                        local flatDir = Vector3.new(dir.X, 0, dir.Z)
-                        if flatDir.Magnitude > 0 then
-                            hrp.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatDir.Unit)
-                        end
-                    end
-                end)
-            end
-        end)
+        startAimbotLoop()
     else
-        if fovCircle then fovCircle.Visible = false end
-        if aimConn then aimConn:Disconnect(); aimConn = nil end
+        stopAimbotLoop()
     end
 end)
 
+-- Кнопки активации: ПКМ и Q (удержание)
 UserInputService.InputBegan:Connect(function(i, g)
     if g then return end
-    if i.UserInputType == Settings.AimbotKey or i.KeyCode == Enum.KeyCode.Q then aimActive = true end
+    if i.UserInputType == Settings.AimbotKey or i.KeyCode == Enum.KeyCode.Q then
+        aimActive = true
+    end
 end)
 UserInputService.InputEnded:Connect(function(i)
-    if i.UserInputType == Settings.AimbotKey or i.KeyCode == Enum.KeyCode.Q then aimActive = false end
+    if i.UserInputType == Settings.AimbotKey or i.KeyCode == Enum.KeyCode.Q then
+        aimActive = false
+    end
 end)
 
 --// ═══════════════════════════════════════════════
@@ -556,30 +537,23 @@ LocalPlayer.CharacterAdded:Connect(function(ch)
 end)
 
 --// ═══════════════════════════════════════════════
---//  8. NOCLIP — ПОЛНЫЙ ФИХ
+--//  8. NOCLIP (FIXED)
 --// ═══════════════════════════════════════════════
 local ncConn
-local noclipSaved = {} -- сохраняем оригинальные значения CanCollide
+local noclipSaved = {}
 
 AddToggle("Noclip", function(s)
     Settings.Noclip = s
     if s then
-        -- Сохраняем оригинальные CanCollide
         noclipSaved = {}
         pcall(function()
             for _, p in ipairs(LocalPlayer.Character:GetDescendants()) do
-                if p:IsA("BasePart") then
-                    noclipSaved[p] = p.CanCollide
-                end
+                if p:IsA("BasePart") then noclipSaved[p] = p.CanCollide end
             end
         end)
-
         if ncConn then ncConn:Disconnect() end
         ncConn = RunService.Stepped:Connect(function()
-            if not Settings.Noclip then
-                ncConn:Disconnect(); ncConn = nil
-                return
-            end
+            if not Settings.Noclip then ncConn:Disconnect(); ncConn = nil; return end
             pcall(function()
                 for _, p in ipairs(LocalPlayer.Character:GetDescendants()) do
                     if p:IsA("BasePart") then p.CanCollide = false end
@@ -587,32 +561,18 @@ AddToggle("Noclip", function(s)
             end)
         end)
     else
-        -- Отключаем соединение
         if ncConn then ncConn:Disconnect(); ncConn = nil end
-
-        -- Восстанавливаем оригинальные значения
         task.defer(function()
-            for part, original in pairs(noclipSaved) do
-                pcall(function()
-                    if part and part.Parent then
-                        part.CanCollide = original
-                    end
-                end)
+            for part, orig in pairs(noclipSaved) do
+                pcall(function() if part and part.Parent then part.CanCollide = orig end end)
             end
             noclipSaved = {}
-        end)
-
-        -- Дополнительно: принудительно включаем коллизию основных частей тела
-        task.defer(function()
             pcall(function()
                 local ch = LocalPlayer.Character
                 if ch then
-                    local mainParts = {"HumanoidRootPart", "Head", "Torso", "UpperTorso", "LowerTorso"}
-                    for _, name in ipairs(mainParts) do
+                    for _, name in ipairs({"HumanoidRootPart","Head","Torso","UpperTorso","LowerTorso"}) do
                         local p = ch:FindFirstChild(name)
-                        if p and p:IsA("BasePart") then
-                            p.CanCollide = true
-                        end
+                        if p and p:IsA("BasePart") then p.CanCollide = true end
                     end
                 end
             end)
@@ -640,15 +600,12 @@ local function startFly()
     local hum = ch:FindFirstChildOfClass("Humanoid")
     if not hrp or not hum then return end
     hum.PlatformStand = true
-
     flyBV = Instance.new("BodyVelocity")
     flyBV.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
     flyBV.Velocity = Vector3.zero; flyBV.Parent = hrp
-
     flyBG = Instance.new("BodyGyro")
     flyBG.MaxTorque = Vector3.new(math.huge,math.huge,math.huge)
     flyBG.P = 9e4; flyBG.D = 500; flyBG.Parent = hrp
-
     flyConn = RunService.RenderStepped:Connect(function()
         if not Settings.Fly or not hrp or not hrp.Parent then stopFly(); return end
         local dir = Vector3.zero
@@ -679,9 +636,7 @@ AddAction("FPS BOOST (Massive)", function()
         settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
         UserSettings():GetService("UserGameSettings").SavedQualityLevel = Enum.SavedQualitySetting.QualityLevel1
     end)
-    pcall(function()
-        Lighting.GlobalShadows = false; Lighting.FogEnd = 9e9; Lighting.Brightness = 1
-    end)
+    pcall(function() Lighting.GlobalShadows = false; Lighting.FogEnd = 9e9; Lighting.Brightness = 1 end)
     local pfx = {"BloomEffect","BlurEffect","ColorCorrectionEffect","SunRaysEffect","DepthOfFieldEffect","Atmosphere"}
     for _, n in ipairs(pfx) do
         for _, o in ipairs(Lighting:GetChildren()) do if o:IsA(n) then pcall(function() o:Destroy() end) end end
@@ -696,8 +651,7 @@ AddAction("FPS BOOST (Massive)", function()
     end
     pcall(function()
         local t = workspace.Terrain
-        t.WaterWaveSize = 0; t.WaterWaveSpeed = 0; t.WaterReflectance = 0
-        t.WaterTransparency = 0; t.Decoration = false
+        t.WaterWaveSize=0;t.WaterWaveSpeed=0;t.WaterReflectance=0;t.WaterTransparency=0;t.Decoration=false
     end)
     for _, o in ipairs(workspace:GetDescendants()) do
         if o:IsA("MeshPart") then pcall(function() o.RenderFidelity = Enum.RenderFidelity.Performance end) end
@@ -705,13 +659,10 @@ AddAction("FPS BOOST (Massive)", function()
     end
     for _, o in ipairs(workspace:GetDescendants()) do
         if o:IsA("Humanoid") and not o:IsDescendantOf(LocalPlayer.Character or game) then
-            pcall(function()
-                o.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-                o.HealthDisplayDistance = 0; o.NameDisplayDistance = 0
-            end)
+            pcall(function() o.DisplayDistanceType=Enum.HumanoidDisplayDistanceType.None;o.HealthDisplayDistance=0;o.NameDisplayDistance=0 end)
         end
     end
-    pcall(function() if sethiddenproperty then sethiddenproperty(Lighting, "Technology", Enum.Technology.Compatibility) end end)
+    pcall(function() if sethiddenproperty then sethiddenproperty(Lighting,"Technology",Enum.Technology.Compatibility) end end)
     pcall(function() collectgarbage("collect") end)
     print("[Zalupa RP] FPS BOOST applied!")
 end)
@@ -729,9 +680,9 @@ end)
 --// ═══════════════════════════════════════════════
 pcall(function()
     StarterGui:SetCore("SendNotification", {
-        Title = "🍆 Zalupa RP v4",
-        Text  = "by armedminion loaded!\nH=menu | RMB/Q=aim | WASD=fly",
+        Title = "🍆 Zalupa RP v5",
+        Text  = "by armedminion loaded!\nH=menu | RMB/Q=aim",
         Duration = 7,
     })
 end)
-print("[Zalupa RP by armedminion] v4 loaded")
+print("[Zalupa RP by armedminion] v5 loaded — aimbot fixed")
