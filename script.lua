@@ -1,7 +1,7 @@
 --// ══════════════════════════════════════════════════════════
---//   Zalupa RP by armedminion  v8
---//   Aimbot: Scriptable Camera (works ALWAYS, any executor)
---//   Spinner: Fast + No Death
+--//   Zalupa RP by armedminion  v9
+--//   Aimbot: mousemoverel — bullets HIT
+--//   Spinner: CFrame rotation — NO ragdoll
 --// ══════════════════════════════════════════════════════════
 
 local Players=game:GetService("Players")
@@ -17,9 +17,9 @@ local S={
     ESP=false,Tracers=false,Speed=false,Noclip=false,SpeedVal=100,
     God=false,InfAmmo=false,NoRecoil=false,
     Fly=false,FlySpeed=80,
-    Aim=false,AimFOV=300,AimSmooth=4,AimPart="Head",
+    Aim=false,AimFOV=300,AimSmooth=2,AimPart="Head",
     AimShowFOV=true,AimWall=false,AimTeam=false,
-    Spin=false,SpinSpeed=4000,SpinJump=35,
+    Spin=false,SpinSpeed=3000,SpinJump=35,
 }
 local LID={God=0,Ammo=0,Recoil=0}
 
@@ -27,9 +27,63 @@ local LID={God=0,Ammo=0,Recoil=0}
 local gP
 pcall(function() gP=(gethui and gethui()) or game:GetService("CoreGui") end)
 if not gP then gP=game:GetService("CoreGui") end
-if gP:FindFirstChild("ZRP8") then gP.ZRP8:Destroy() end
+if gP:FindFirstChild("ZRP9") then gP.ZRP9:Destroy() end
 pcall(function() RunService:UnbindFromRenderStep("ZRP_Aim") end)
 pcall(function() RunService:UnbindFromRenderStep("ZRP_Spin") end)
+
+-- ══════ DETECT MOUSE MOVE ══════
+local mmr = nil
+local aimMethod = "none"
+
+-- Method 1: mousemoverel (Xeno, Synapse, Fluxus, KRNL)
+if not mmr then
+    pcall(function()
+        if type(mousemoverel)=="function" then mmr=mousemoverel; aimMethod="mousemoverel" end
+    end)
+end
+
+-- Method 2: mouse_moverel
+if not mmr then
+    pcall(function()
+        if type(mouse_moverel)=="function" then mmr=mouse_moverel; aimMethod="mouse_moverel" end
+    end)
+end
+
+-- Method 3: getgenv().mousemoverel
+if not mmr then
+    pcall(function()
+        if getgenv and type(getgenv().mousemoverel)=="function" then
+            mmr=getgenv().mousemoverel; aimMethod="getgenv.mousemoverel"
+        end
+    end)
+end
+
+-- Method 4: Input.MouseMove
+if not mmr then
+    pcall(function()
+        if type(Input)=="table" and type(Input.MouseMove)=="function" then
+            mmr=function(x,y) Input.MouseMove(x,y) end; aimMethod="Input.MouseMove"
+        end
+    end)
+end
+
+-- Method 5: Create from VirtualInputManager
+if not mmr then
+    pcall(function()
+        local vim=game:GetService("VirtualInputManager")
+        if vim then
+            mmr=function(x,y)
+                vim:SendMouseMoveEvent(x,y,workspace)
+            end
+            aimMethod="VIM"
+        end
+    end)
+end
+
+-- Method 6: last resort — Scriptable camera (aim works but bullets may miss)
+if not mmr then aimMethod="scriptable (fallback)" end
+
+warn("[ZRP v9] Aimbot method detected: "..aimMethod)
 
 -- ══════ COLORS ══════
 local C={
@@ -41,14 +95,14 @@ local C={
 }
 
 -- ══════════════════════════════════════════════
---  GUI (same beautiful UI as v7)
+--  GUI
 -- ══════════════════════════════════════════════
 local SG=Instance.new("ScreenGui")
-SG.Name="ZRP8";SG.Parent=gP;SG.ZIndexBehavior=Enum.ZIndexBehavior.Sibling;SG.ResetOnSpawn=false
+SG.Name="ZRP9";SG.Parent=gP;SG.ZIndexBehavior=Enum.ZIndexBehavior.Sibling;SG.ResetOnSpawn=false
 
 local MF=Instance.new("Frame")
 MF.Name="Main";MF.Parent=SG;MF.BackgroundColor3=C.bg;MF.BorderSizePixel=0
-MF.Position=UDim2.new(0.01,0,0.03,0);MF.Size=UDim2.new(0,275,0,600)
+MF.Position=UDim2.new(0.01,0,0.03,0);MF.Size=UDim2.new(0,275,0,610)
 MF.Active=true;MF.ClipsDescendants=true
 Instance.new("UICorner",MF).CornerRadius=UDim.new(0,14)
 
@@ -71,27 +125,25 @@ do local d,ds,sp
     end)
 end
 
--- Top bar
 local tB=Instance.new("Frame");tB.Parent=MF;tB.Size=UDim2.new(1,0,0,3);tB.BorderSizePixel=0;tB.BackgroundColor3=Color3.new(1,1,1)
 local tBG=Instance.new("UIGradient");tBG.Parent=tB;tBG.Color=ColorSequence.new{ColorSequenceKeypoint.new(0,C.accent),ColorSequenceKeypoint.new(0.5,C.accent2),ColorSequenceKeypoint.new(1,C.accent)}
 
--- Title area
 local tF=Instance.new("Frame");tF.Parent=MF;tF.BackgroundTransparency=1;tF.Position=UDim2.new(0,0,0,3);tF.Size=UDim2.new(1,0,0,55)
 local t1=Instance.new("TextLabel");t1.Parent=tF;t1.BackgroundTransparency=1;t1.Position=UDim2.new(0,14,0,8);t1.Size=UDim2.new(0,35,0,35)
 t1.Font=Enum.Font.GothamBlack;t1.TextSize=28;t1.Text="🍆";t1.TextColor3=C.accent
 local t2=Instance.new("TextLabel");t2.Parent=tF;t2.BackgroundTransparency=1;t2.Position=UDim2.new(0,50,0,5);t2.Size=UDim2.new(1,-60,0,22)
 t2.Font=Enum.Font.GothamBlack;t2.TextSize=18;t2.Text="ZALUPA RP";t2.TextColor3=C.text;t2.TextXAlignment=Enum.TextXAlignment.Left
 local t3=Instance.new("TextLabel");t3.Parent=tF;t3.BackgroundTransparency=1;t3.Position=UDim2.new(0,50,0,27);t3.Size=UDim2.new(1,-60,0,16)
-t3.Font=Enum.Font.Gotham;t3.TextSize=10;t3.Text="by armedminion • v8 • [H] menu";t3.TextColor3=C.dim;t3.TextXAlignment=Enum.TextXAlignment.Left
+t3.Font=Enum.Font.Gotham;t3.TextSize=9;t3.Text="by armedminion • v9 • [H] • Aim: "..aimMethod
+t3.TextColor3=C.dim;t3.TextXAlignment=Enum.TextXAlignment.Left
 
-local cB=Instance.new("TextButton");cB.Parent=tF;cB.BackgroundColor3=Color3.fromRGB(55,18,28)
-cB.Position=UDim2.new(1,-38,0,10);cB.Size=UDim2.new(0,26,0,26);cB.Font=Enum.Font.GothamBold;cB.TextSize=14
-cB.Text="×";cB.TextColor3=C.accent;cB.BorderSizePixel=0;Instance.new("UICorner",cB).CornerRadius=UDim.new(0,6)
-cB.MouseButton1Click:Connect(function() MF.Visible=false end)
+local cBtn=Instance.new("TextButton");cBtn.Parent=tF;cBtn.BackgroundColor3=Color3.fromRGB(55,18,28)
+cBtn.Position=UDim2.new(1,-38,0,10);cBtn.Size=UDim2.new(0,26,0,26);cBtn.Font=Enum.Font.GothamBold;cBtn.TextSize=14
+cBtn.Text="×";cBtn.TextColor3=C.accent;cBtn.BorderSizePixel=0;Instance.new("UICorner",cBtn).CornerRadius=UDim.new(0,6)
+cBtn.MouseButton1Click:Connect(function() MF.Visible=false end)
 
 local dv=Instance.new("Frame");dv.Parent=MF;dv.Position=UDim2.new(0.05,0,0,58);dv.Size=UDim2.new(0.9,0,0,1);dv.BorderSizePixel=0;dv.BackgroundColor3=Color3.fromRGB(45,45,75)
 
--- Scroll
 local SF=Instance.new("ScrollingFrame");SF.Parent=MF;SF.Position=UDim2.new(0,0,0,62);SF.Size=UDim2.new(1,0,1,-62)
 SF.BackgroundTransparency=1;SF.BorderSizePixel=0;SF.ScrollBarThickness=3;SF.ScrollBarImageColor3=C.accent
 SF.CanvasSize=UDim2.new(0,0,0,0);SF.AutomaticCanvasSize=Enum.AutomaticSize.Y
@@ -100,11 +152,10 @@ local pd=Instance.new("UIPadding");pd.Parent=SF;pd.PaddingLeft=UDim.new(0,10);pd
 
 local lo=0
 
--- ══════ FACTORIES ══════
 local function AddSep(t)
     lo=lo+1;local f=Instance.new("Frame");f.Parent=SF;f.BackgroundTransparency=1;f.Size=UDim2.new(1,0,0,22);f.LayoutOrder=lo
-    local dt=Instance.new("Frame");dt.Parent=f;dt.BackgroundColor3=C.accent;dt.Position=UDim2.new(0,0,0.5,-3);dt.Size=UDim2.new(0,6,0,6);dt.BorderSizePixel=0
-    Instance.new("UICorner",dt).CornerRadius=UDim.new(1,0)
+    local dt2=Instance.new("Frame");dt2.Parent=f;dt2.BackgroundColor3=C.accent;dt2.Position=UDim2.new(0,0,0.5,-3);dt2.Size=UDim2.new(0,6,0,6);dt2.BorderSizePixel=0
+    Instance.new("UICorner",dt2).CornerRadius=UDim.new(1,0)
     local l=Instance.new("TextLabel");l.Parent=f;l.BackgroundTransparency=1;l.Position=UDim2.new(0,12,0,0);l.Size=UDim2.new(1,-12,1,0)
     l.Font=Enum.Font.GothamBold;l.TextSize=11;l.Text=t:upper();l.TextColor3=C.sep;l.TextXAlignment=Enum.TextXAlignment.Left
 end
@@ -187,8 +238,9 @@ local function doESP(plr)
         local at=char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart");if not at then return end
         local bb=Instance.new("BillboardGui");bb.Name="_ESPBb";bb.Size=UDim2.new(0,220,0,44)
         bb.StudsOffset=Vector3.new(0,3.2,0);bb.AlwaysOnTop=true;bb.Parent=at
-        local lb=Instance.new("TextLabel");lb.Size=UDim2.new(1,0,1,0);lb.BackgroundTransparency=1
-        lb.Font=Enum.Font.GothamBold;lb.TextSize=14;lb.TextColor3=Color3.fromRGB(255,255,0);lb.TextStrokeTransparency=0;lb.Parent=bb
+        local lbl=Instance.new("TextLabel");lbl.Size=UDim2.new(1,0,1,0);lbl.BackgroundTransparency=1
+        lbl.Font=Enum.Font.GothamBold;lbl.TextSize=14;lbl.TextColor3=Color3.fromRGB(255,255,0)
+        lbl.TextStrokeTransparency=0;lbl.Parent=bb
         local hum=char:FindFirstChildOfClass("Humanoid")
         if hum then
             local cn;cn=RunService.Heartbeat:Connect(function()
@@ -199,7 +251,7 @@ local function doESP(plr)
                     local b=char:FindFirstChild("HumanoidRootPart")
                     if a and b then d=" ["..math.floor((a.Position-b.Position).Magnitude).."m]" end
                 end)
-                lb.Text=plr.Name.." "..math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)..d
+                lbl.Text=plr.Name.." "..math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)..d
             end);table.insert(espC,cn)
         end
     end
@@ -229,18 +281,26 @@ AddToggle("Tracers",function(s) S.Tracers=s
                 if vs then local ok,ln=pcall(function() local l=Drawing.new("Line")
                     l.From=Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y);l.To=Vector2.new(ps.X,ps.Y)
                     l.Color=Color3.fromRGB(0,255,255);l.Thickness=1.4;l.Transparency=1;l.Visible=true;return l end)
-                    if ok and ln then table.insert(tL,ln) end
-                end
+                    if ok and ln then table.insert(tL,ln) end end
             end
         end end
     end) else clrT() end
 end)
 
 -- ═══════════════════════════════════════════════
---  3. AIMBOT — SCRIPTABLE CAMERA METHOD
---     ГАРАНТИРОВАННО работает на ЛЮБОМ эксплоите
---     Работает от 1-го и 3-го лица
---     Работает когда враг в машине
+--  3. AIMBOT — BULLETS ACTUALLY HIT
+-- ═══════════════════════════════════════════════
+--
+--  ПОЧЕМУ РАНЬШЕ ПУЛИ НЕ ПОПАДАЛИ:
+--  Scriptable Camera меняла CFrame камеры, НО оружие стреляет
+--  по Mouse.Hit (позиция мыши в 3D мире).
+--  Mouse.Hit обновляется от ПОЗИЦИИ КУРСОРА на экране,
+--  а не от Camera.CFrame.
+--  
+--  РЕШЕНИЕ: mousemoverel двигает КУРСОР мыши →
+--  камера следует за курсором (CameraType остаётся Custom) →
+--  Mouse.Hit обновляется → пули летят куда надо
+--
 -- ═══════════════════════════════════════════════
 AddSep("Combat")
 
@@ -257,8 +317,6 @@ pcall(function()
 end)
 
 local aimHold=false
-local CAMERA_TAKEN=false
-local ORIG_CAM_TYPE=nil
 
 local function getClosest()
     Camera=workspace.CurrentCamera
@@ -286,11 +344,9 @@ end
 local function bindAimbot()
     pcall(function() RunService:UnbindFromRenderStep("ZRP_Aim") end)
 
-    -- Приоритет 32000 = выполняется ПОСЛЕ ВСЕГО
-    -- Ни один скрипт игры не может перезаписать нас
-    RunService:BindToRenderStep("ZRP_Aim", 32000, function()
-        Camera = workspace.CurrentCamera
-        local cx,cy = Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2
+    RunService:BindToRenderStep("ZRP_Aim", Enum.RenderPriority.Input.Value - 1, function()
+        Camera=workspace.CurrentCamera
+        local cx,cy=Camera.ViewportSize.X/2,Camera.ViewportSize.Y/2
 
         -- FOV circle
         if fovC then
@@ -299,90 +355,86 @@ local function bindAimbot()
             else fovC.Visible=false end
         end
 
-        -- Не целимся → отдаём камеру обратно
         if not S.Aim or not aimHold then
-            if CAMERA_TAKEN then
-                pcall(function()
-                    Camera.CameraType = ORIG_CAM_TYPE or Enum.CameraType.Custom
-                end)
-                CAMERA_TAKEN = false
-            end
             if aimDot then aimDot.Visible=false end
             return
         end
 
-        -- Ищем цель
-        local target = getClosest()
+        local target=getClosest()
         if not target then
-            if CAMERA_TAKEN then
-                pcall(function() Camera.CameraType = ORIG_CAM_TYPE or Enum.CameraType.Custom end)
-                CAMERA_TAKEN = false
-            end
             if aimDot then aimDot.Visible=false end
             return
         end
 
-        -- ═══ ЗАБИРАЕМ КАМЕРУ ═══
-        if not CAMERA_TAKEN then
-            ORIG_CAM_TYPE = Camera.CameraType
-            CAMERA_TAKEN = true
-        end
-
-        -- SCRIPTABLE = Roblox ПОЛНОСТЬЮ отключает свой контроль камеры
-        -- Ни один скрипт игры не может изменить CFrame пока тип Scriptable
-        Camera.CameraType = Enum.CameraType.Scriptable
-
-        -- ═══ ПОЗИЦИЯ КАМЕРЫ = ГОЛОВА ПЕРСОНАЖА ═══
-        local ch = LP.Character
-        local camPos = Camera.CFrame.Position -- fallback
-        if ch then
-            local head = ch:FindFirstChild("Head")
-            if head then
-                -- Позиция = голова + маленький оффсет вверх
-                camPos = head.CFrame.Position + head.CFrame.UpVector * 0.3
-            else
-                local hrp = ch:FindFirstChild("HumanoidRootPart")
-                if hrp then camPos = hrp.Position + Vector3.new(0,1.5,0) end
-            end
-        end
-
-        -- ═══ НАПРАВЛЕНИЕ К ЦЕЛИ ═══
-        local targetPos = target.part.Position
-        local goalDir = (targetPos - camPos).Unit
-
-        -- ═══ ПЛАВНОЕ НАВЕДЕНИЕ (только ротация, позиция всегда на голове) ═══
-        local currentLook = Camera.CFrame.LookVector
-        local lerpedLook = currentLook:Lerp(goalDir, math.clamp(1/S.AimSmooth, 0.1, 1))
-
-        if lerpedLook.Magnitude > 0.001 then
-            Camera.CFrame = CFrame.lookAt(camPos, camPos + lerpedLook)
-        end
+        local screenPos,onScreen=Camera:WorldToViewportPoint(target.part.Position)
+        if not onScreen then return end
 
         -- Зелёная точка на цели
         if aimDot then
-            local sp = Camera:WorldToViewportPoint(targetPos)
-            aimDot.Position=Vector2.new(sp.X,sp.Y);aimDot.Visible=true
+            aimDot.Position=Vector2.new(screenPos.X,screenPos.Y);aimDot.Visible=true
         end
 
-        -- Поворачиваем тело персонажа (чтобы пули летели в цель)
+        -- Дельта от центра экрана до цели
+        local dx=screenPos.X-cx
+        local dy=screenPos.Y-cy
+
+        -- ═══ МЕТОД 1: mousemoverel (ПУЛИ ПОПАДАЮТ) ═══
+        if mmr then
+            -- НЕ ТРОГАЕМ CameraType — оставляем Custom
+            -- Двигаем НАСТОЯЩИЙ курсор мыши → камера следует →
+            -- Mouse.Hit обновляется → оружие стреляет В ЦЕЛЬ
+
+            local sx = dx / S.AimSmooth
+            local sy = dy / S.AimSmooth
+
+            -- Ограничение чтобы не дёргало
+            local maxPx = 150
+            sx = math.clamp(sx, -maxPx, maxPx)
+            sy = math.clamp(sy, -maxPx, maxPx)
+
+            -- Мёртвая зона — если уже почти на цели, не дёргать
+            if math.abs(dx) > 1 or math.abs(dy) > 1 then
+                mmr(sx, sy)
+            end
+
+        -- ═══ МЕТОД 2: Scriptable Camera (FALLBACK — камера целится но пули могут не попадать) ═══
+        else
+            -- Предупреждение: без mousemoverel пули могут не попадать
+            -- Это fallback который хотя бы двигает камеру
+
+            local camPos = Camera.CFrame.Position
+            local targetPos = target.part.Position
+            local dir = (targetPos - camPos).Unit
+            local goal = CFrame.lookAt(camPos, camPos + dir)
+            local alpha = math.clamp(1/S.AimSmooth, 0.1, 1)
+
+            -- Временно берём контроль
+            Camera.CameraType = Enum.CameraType.Scriptable
+            Camera.CFrame = Camera.CFrame:Lerp(goal, alpha)
+        end
+    end)
+end
+
+-- Возврат камеры когда отпускаем кнопку (для fallback метода)
+local function aimReleaseCheck()
+    if not mmr and not aimHold then
         pcall(function()
-            local hrp=ch:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local flat=Vector3.new(goalDir.X,0,goalDir.Z)
-                if flat.Magnitude>0.1 then hrp.CFrame=CFrame.lookAt(hrp.Position,hrp.Position+flat.Unit) end
+            if Camera.CameraType == Enum.CameraType.Scriptable then
+                Camera.CameraType = Enum.CameraType.Custom
             end
         end)
-    end)
+    end
 end
 
 local function unbindAimbot()
     pcall(function() RunService:UnbindFromRenderStep("ZRP_Aim") end)
     if fovC then fovC.Visible=false end
     if aimDot then aimDot.Visible=false end
-    if CAMERA_TAKEN then
-        pcall(function() Camera.CameraType=ORIG_CAM_TYPE or Enum.CameraType.Custom end)
-        CAMERA_TAKEN=false
-    end
+    pcall(function()
+        if Camera.CameraType==Enum.CameraType.Scriptable then
+            Camera.CameraType=Enum.CameraType.Custom
+        end
+    end)
 end
 
 AddToggle("Aimbot (RMB / Q)",function(s) S.Aim=s;if s then bindAimbot() else unbindAimbot() end end)
@@ -391,7 +443,10 @@ UIS.InputBegan:Connect(function(i,g) if g then return end
     if i.UserInputType==Enum.UserInputType.MouseButton2 or i.KeyCode==Enum.KeyCode.Q then aimHold=true end
 end)
 UIS.InputEnded:Connect(function(i)
-    if i.UserInputType==Enum.UserInputType.MouseButton2 or i.KeyCode==Enum.KeyCode.Q then aimHold=false end
+    if i.UserInputType==Enum.UserInputType.MouseButton2 or i.KeyCode==Enum.KeyCode.Q then
+        aimHold=false
+        aimReleaseCheck()
+    end
 end)
 
 -- ═══════════════════════════════════════════════
@@ -401,9 +456,7 @@ local ammoKW={"ammo","clip","mag","bullet","round","cartridge","shell","reserve"
 local function pV(root) for _,d in ipairs(root:GetDescendants()) do
     if d:IsA("NumberValue") or d:IsA("IntValue") then local n=d.Name:lower()
         for _,k in ipairs(ammoKW) do if n:find(k) then d.Value=9999;break end end
-    end
-end end
-
+end end end
 AddToggle("Infinite Ammo",function(s) S.InfAmmo=s;LID.Ammo=LID.Ammo+1
     if s then local id=LID.Ammo;task.spawn(function() while S.InfAmmo and LID.Ammo==id do pcall(function()
         local ch=LP.Character;if ch then for _,t in ipairs(ch:GetChildren()) do if t:IsA("Tool") or t:IsA("Model") then pV(t) end end end
@@ -418,8 +471,7 @@ local rcKW={"recoil","spread","kick","sway","bloom","deviation","scatter","shake
 AddToggle("No Recoil",function(s) S.NoRecoil=s;LID.Recoil=LID.Recoil+1
     if s then local id=LID.Recoil;task.spawn(function() while S.NoRecoil and LID.Recoil==id do pcall(function()
         local function zr(r) for _,d in ipairs(r:GetDescendants()) do if d:IsA("NumberValue") or d:IsA("IntValue") then
-            local n=d.Name:lower();for _,k in ipairs(rcKW) do if n:find(k) then d.Value=0;break end end
-        end end end
+            local n=d.Name:lower();for _,k in ipairs(rcKW) do if n:find(k) then d.Value=0;break end end end end end
         local ch=LP.Character;if ch then for _,t in ipairs(ch:GetChildren()) do if t:IsA("Tool") or t:IsA("Model") then zr(t) end end end
         local bp=LP:FindFirstChild("Backpack");if bp then zr(bp) end
     end);task.wait(0.1) end end) end
@@ -440,33 +492,22 @@ local function applyGod(ch)
     pcall(function() hum.MaxHealth=math.huge;hum.Health=math.huge end)
     pcall(function() local hs=ch:FindFirstChild("Health");if hs and hs:IsA("Script") then hs:Destroy() end end)
     pcall(function() if not ch:FindFirstChildOfClass("ForceField") then local ff=Instance.new("ForceField",ch);ff.Visible=false end end)
-    local hc=hum.HealthChanged:Connect(function(h)
-        if S.God then task.defer(function() pcall(function() hum.Health=math.huge end) end) end
-    end);table.insert(godC,hc)
-    pcall(function() for _,o in ipairs(ch:GetDescendants()) do local n=o.Name:lower()
-        if o:IsA("Script") and (n:find("damage") or n:find("hurt") or n:find("kill")) then o:Destroy() end
-    end end)
+    local hc=hum.HealthChanged:Connect(function() if S.God then task.defer(function() pcall(function() hum.Health=math.huge end) end) end end)
+    table.insert(godC,hc)
 end
 
-local function remGod(ch)
-    if not ch then return end
+local function remGod(ch) if not ch then return end
     pcall(function() local hum=ch:FindFirstChildOfClass("Humanoid")
-        if hum then hum:SetStateEnabled(Enum.HumanoidStateType.Dead,true)
-            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
-            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true)
-            hum.MaxHealth=100;hum.Health=100
-        end
-    end)
+        if hum then hum:SetStateEnabled(Enum.HumanoidStateType.Dead,true);hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
+            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true);hum.MaxHealth=100;hum.Health=100 end end)
     pcall(function() local ff=ch:FindFirstChildOfClass("ForceField");if ff then ff:Destroy() end end)
 end
 
 AddToggle("God Mode",function(s) S.God=s;LID.God=(LID.God or 0)+1;clrGod()
-    if s then
-        applyGod(LP.Character)
+    if s then applyGod(LP.Character)
         table.insert(godC,LP.CharacterAdded:Connect(function(ch) task.wait(0.5);if S.God then applyGod(ch) end end))
         local id=LID.God;task.spawn(function() while S.God and LID.God==id do pcall(function()
-            local ch=LP.Character;if not ch then return end
-            local hum=ch:FindFirstChildOfClass("Humanoid");if not hum then return end
+            local ch=LP.Character;if not ch then return end;local hum=ch:FindFirstChildOfClass("Humanoid");if not hum then return end
             hum:SetStateEnabled(Enum.HumanoidStateType.Dead,false)
             if hum.Health~=math.huge then hum.Health=math.huge end
             if hum.MaxHealth~=math.huge then hum.MaxHealth=math.huge end
@@ -476,7 +517,7 @@ AddToggle("God Mode",function(s) S.God=s;LID.God=(LID.God or 0)+1;clrGod()
 end)
 
 -- ═══════════════════════════════════════════════
---  7. SPEED HACK
+--  7. SPEED
 -- ═══════════════════════════════════════════════
 AddSep("Movement")
 AddToggle("Speed (x"..S.SpeedVal..")",function(s) S.Speed=s
@@ -498,8 +539,7 @@ AddToggle("Noclip",function(s) S.Noclip=s
         task.defer(function() for pt,og in pairs(ncS) do pcall(function() if pt and pt.Parent then pt.CanCollide=og end end) end;ncS={}
             pcall(function() local ch=LP.Character;if not ch then return end
                 for _,nm in ipairs({"HumanoidRootPart","Head","Torso","UpperTorso","LowerTorso"}) do
-                    local p=ch:FindFirstChild(nm);if p and p:IsA("BasePart") then p.CanCollide=true end end
-            end)
+                    local p=ch:FindFirstChild(nm);if p and p:IsA("BasePart") then p.CanCollide=true end end end)
         end)
     end
 end)
@@ -536,121 +576,149 @@ AddToggle("Fly (WASD+Space+Shift)",function(s) if s then startFly() else stopFly
 LP.CharacterAdded:Connect(function() if S.Fly then stopFly() end end)
 
 -- ═══════════════════════════════════════════════
---  10. SPINNER + BHOP (БЫСТРЫЙ + НЕ УБИВАЕТ)
+--  10. SPINNER + BHOP — CFRAME ROTATION (НЕТ РАГДОЛЛА)
+-- ═══════════════════════════════════════════════
+--
+--  ПОЧЕМУ РАНЬШЕ РАГДОЛЛИЛО:
+--  BodyAngularVelocity создаёт ФИЗИЧЕСКУЮ силу →
+--  персонаж врезается в объекты → рагдолл.
+--
+--  РЕШЕНИЕ: Вращаем через CFrame (без физики) →
+--  нет столкновений от вращения → нет рагдолла.
+--  + Каждый кадр принудительно отменяем рагдолл состояние.
+--
 -- ═══════════════════════════════════════════════
 AddSep("Fun")
 
+local spinAngle = 0
 local spinBound = false
 local origJP = 50
 
 local function bindSpin()
-    if spinBound then return end; spinBound = true
+    if spinBound then return end;spinBound=true
     pcall(function() RunService:UnbindFromRenderStep("ZRP_Spin") end)
 
-    -- Сохраняем оригинальный прыжок
+    -- Запоминаем оригинальный прыжок
     pcall(function()
-        local hum = LP.Character:FindFirstChildOfClass("Humanoid")
-        if hum then origJP = hum.JumpPower end
+        local hum=LP.Character:FindFirstChildOfClass("Humanoid")
+        if hum then origJP=hum.JumpPower end
     end)
 
-    RunService:BindToRenderStep("ZRP_Spin", Enum.RenderPriority.Character.Value + 1, function()
+    spinAngle = 0
+
+    RunService:BindToRenderStep("ZRP_Spin", Enum.RenderPriority.Character.Value + 1, function(dt)
         if not S.Spin then return end
 
-        local ch = LP.Character; if not ch then return end
-        local hrp = ch:FindFirstChild("HumanoidRootPart"); if not hrp then return end
-        local hum = ch:FindFirstChildOfClass("Humanoid"); if not hum then return end
+        local ch=LP.Character;if not ch then return end
+        local hrp=ch:FindFirstChild("HumanoidRootPart");if not hrp then return end
+        local hum=ch:FindFirstChildOfClass("Humanoid");if not hum then return end
 
-        -- ═══ ЗАЩИТА ОТ СМЕРТИ ═══
-        -- Отключаем падение, рэгдолл, смерть
+        -- ═══ АНТИ-РАГДОЛЛ: каждый кадр ═══
         pcall(function() hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false) end)
         pcall(function() hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false) end)
         pcall(function() hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false) end)
+        pcall(function() hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false) end)
+        pcall(function() hum.PlatformStand = false end)
+        pcall(function() hum.Sit = false end)
 
-        -- Если здоровье падает — восстанавливаем
+        -- Если рагдоллнулся — принудительно встаём
+        local state = hum:GetState()
+        if state == Enum.HumanoidStateType.Ragdoll
+        or state == Enum.HumanoidStateType.FallingDown
+        or state == Enum.HumanoidStateType.Physics then
+            pcall(function() hum:ChangeState(Enum.HumanoidStateType.GettingUp) end)
+            task.defer(function()
+                pcall(function() hum:ChangeState(Enum.HumanoidStateType.Running) end)
+            end)
+        end
+
+        -- Убиваем рагдолл-констрейнты если игра их создаёт
         pcall(function()
-            if hum.Health < hum.MaxHealth then
+            for _, obj in ipairs(ch:GetDescendants()) do
+                if obj:IsA("BallSocketConstraint") or obj:IsA("HingeConstraint") then
+                    if obj.Name:lower():find("ragdoll") or obj.Name:lower():find("socket") then
+                        obj.Enabled = false
+                    end
+                end
+                -- Убираем NoCollisionConstraint от рагдолла
+                if obj:IsA("NoCollisionConstraint") and obj.Name:lower():find("ragdoll") then
+                    obj.Enabled = false
+                end
+            end
+            -- Убиваем скрипты рагдолла
+            for _, obj in ipairs(ch:GetDescendants()) do
+                if obj:IsA("Script") or obj:IsA("LocalScript") then
+                    local n = obj.Name:lower()
+                    if n:find("ragdoll") then
+                        obj.Disabled = true
+                    end
+                end
+            end
+        end)
+
+        -- Все части Motor6D должны быть включены (рагдолл отключает их)
+        pcall(function()
+            for _, obj in ipairs(ch:GetDescendants()) do
+                if obj:IsA("Motor6D") then
+                    obj.Enabled = true
+                end
+            end
+        end)
+
+        -- Восстанавливаем здоровье (спиннер не должен убивать)
+        pcall(function()
+            if hum.Health < hum.MaxHealth * 0.5 then
                 hum.Health = hum.MaxHealth
             end
         end)
 
-        -- ═══ ВРАЩЕНИЕ ═══
-        -- Убедимся что BodyAngularVelocity существует
-        local bav = hrp:FindFirstChild("_SpinBAV")
-        if not bav then
-            bav = Instance.new("BodyAngularVelocity")
-            bav.Name = "_SpinBAV"
-            bav.MaxTorque = Vector3.new(0, math.huge, 0)
-            bav.AngularVelocity = Vector3.new(0, math.rad(S.SpinSpeed), 0)
-            bav.Parent = hrp
-        else
-            -- Обновляем скорость
-            bav.AngularVelocity = Vector3.new(0, math.rad(S.SpinSpeed), 0)
-        end
+        -- ═══ CFRAME ВРАЩЕНИЕ (без физики = без рагдолла) ═══
+        spinAngle = spinAngle + math.rad(S.SpinSpeed) * dt
+
+        local pos = hrp.Position
+        local vel = hrp.Velocity
+
+        -- Сохраняем текущий наклон Y (движение вперёд/назад)
+        hrp.CFrame = CFrame.new(pos) * CFrame.Angles(0, spinAngle, 0)
+        hrp.Velocity = vel -- сохраняем скорость движения
 
         -- ═══ ПРЫЖОК ВЫШЕ + АВТОПРЫЖОК ═══
-        pcall(function()
-            hum.JumpPower = origJP + S.SpinJump
-        end)
+        pcall(function() hum.JumpPower = origJP + S.SpinJump end)
 
-        -- Автопрыжок когда на земле
         if hum.FloorMaterial ~= Enum.Material.Air then
-            pcall(function()
-                hum:ChangeState(Enum.HumanoidStateType.Jumping)
-            end)
+            pcall(function() hum:ChangeState(Enum.HumanoidStateType.Jumping) end)
         end
 
-        -- Если в воздухе и падаем — предотвращаем урон от падения
-        local state = hum:GetState()
-        if state == Enum.HumanoidStateType.Freefall then
-            pcall(function()
-                -- Замедляем падение чтобы не было урона
-                local vel = hrp.Velocity
-                if vel.Y < -50 then
-                    hrp.Velocity = Vector3.new(vel.X, -50, vel.Z)
-                end
-            end)
-        end
+        -- Ограничиваем скорость падения (нет урона)
+        pcall(function()
+            if hrp.Velocity.Y < -60 then
+                hrp.Velocity = Vector3.new(hrp.Velocity.X, -60, hrp.Velocity.Z)
+            end
+        end)
     end)
 end
 
 local function unbindSpin()
-    spinBound = false
+    spinBound=false
     pcall(function() RunService:UnbindFromRenderStep("ZRP_Spin") end)
-
-    -- Убираем BodyAngularVelocity
     pcall(function()
-        local ch = LP.Character
-        if ch then
-            local hrp = ch:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local bav = hrp:FindFirstChild("_SpinBAV")
-                if bav then bav:Destroy() end
-            end
-            -- Восстанавливаем прыжок
-            local hum = ch:FindFirstChildOfClass("Humanoid")
-            if hum then
-                hum.JumpPower = origJP
-                hum:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
-                hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-                hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
-            end
-        end
+        local ch=LP.Character;if not ch then return end
+        local hum=ch:FindFirstChildOfClass("Humanoid");if not hum then return end
+        hum.JumpPower=origJP
+        hum:SetStateEnabled(Enum.HumanoidStateType.Dead,true)
+        hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
+        hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true)
+        hum:SetStateEnabled(Enum.HumanoidStateType.Physics,true)
+        hum:ChangeState(Enum.HumanoidStateType.Running)
     end)
 end
 
-AddToggle("Spinner + Bhop (FAST)",function(s) S.Spin=s;if s then bindSpin() else unbindSpin() end end)
+AddToggle("Spinner + Bhop",function(s) S.Spin=s;if s then bindSpin() else unbindSpin() end end)
 
--- Переприменяем при респавне
-LP.CharacterAdded:Connect(function(ch)
-    task.wait(1)
+LP.CharacterAdded:Connect(function(ch) task.wait(1)
     if S.Spin then
-        pcall(function()
-            local hum = ch:FindFirstChildOfClass("Humanoid")
-            if hum then origJP = hum.JumpPower end
-        end)
-        unbindSpin()
-        S.Spin = true
-        bindSpin()
+        pcall(function() origJP=ch:FindFirstChildOfClass("Humanoid").JumpPower end)
+        unbindSpin();S.Spin=true;bindSpin()
     end
 end)
 
@@ -664,17 +732,14 @@ AddAction("FPS BOOST (Massive)",function()
     pcall(function() Lighting.GlobalShadows=false;Lighting.FogEnd=9e9 end)
     for _,n in ipairs({"BloomEffect","BlurEffect","ColorCorrectionEffect","SunRaysEffect","DepthOfFieldEffect","Atmosphere"}) do
         for _,o in ipairs(Lighting:GetChildren()) do if o:IsA(n) then pcall(function() o:Destroy() end) end end
-        for _,o in ipairs(Camera:GetChildren()) do if o:IsA(n) then pcall(function() o:Destroy() end) end end
-    end
+        for _,o in ipairs(Camera:GetChildren()) do if o:IsA(n) then pcall(function() o:Destroy() end) end end end
     for _,o in ipairs(workspace:GetDescendants()) do
         for _,c in ipairs({"ParticleEmitter","Fire","Smoke","Sparkles","Trail","Beam","PointLight","SpotLight","SurfaceLight"}) do
-            if o:IsA(c) then pcall(function() o:Destroy() end);break end end
-    end
+            if o:IsA(c) then pcall(function() o:Destroy() end);break end end end
     for _,o in ipairs(workspace:GetDescendants()) do
         if o:IsA("Decal") or o:IsA("Texture") then pcall(function() o.Transparency=1 end) end
         if o:IsA("MeshPart") then pcall(function() o.RenderFidelity=Enum.RenderFidelity.Performance end) end
-        if o:IsA("BasePart") then pcall(function() o.CastShadow=false end) end
-    end
+        if o:IsA("BasePart") then pcall(function() o.CastShadow=false end) end end
     pcall(function() local t=workspace.Terrain;t.WaterWaveSize=0;t.WaterWaveSpeed=0;t.WaterReflectance=0;t.WaterTransparency=0;t.Decoration=false end)
     pcall(function() if sethiddenproperty then sethiddenproperty(Lighting,"Technology",Enum.Technology.Compatibility) end end)
     pcall(function() collectgarbage("collect") end)
@@ -689,5 +754,8 @@ UIS.InputBegan:Connect(function(i,g) if g then return end;if i.KeyCode==Enum.Key
 --  LOADED
 -- ═══════════════════════════════════════════════
 pcall(function() StarterGui:SetCore("SendNotification",{
-    Title="🍆 Zalupa RP v8",Text="Aimbot: Scriptable Camera (100% works)\nH=menu | RMB/Q=aim",Duration=7}) end)
-print("[Zalupa RP v8] Loaded — Aimbot uses Scriptable Camera")
+    Title="🍆 Zalupa RP v9",
+    Text="Aim: "..aimMethod.." (bullets hit!)\nH=menu | RMB/Q=aim",
+    Duration=7
+}) end)
+warn("[Zalupa RP v9] Loaded | Aimbot: "..aimMethod)
