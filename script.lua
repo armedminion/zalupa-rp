@@ -1,6 +1,6 @@
 --// ══════════════════════════════════════════════════════════
---//   Zalupa RP by armedminion  v14  —  XENO OPTIMIZED
---//   mousemoverel confirmed working
+--//   Zalupa RP by armedminion  v14 
+--//   НЕ РАБОТАЕТ!!!
 --// ══════════════════════════════════════════════════════════
 
 local Players = game:GetService("Players")
